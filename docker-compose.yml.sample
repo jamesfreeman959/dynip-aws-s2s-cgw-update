@@ -1,0 +1,9 @@
+version: "3.5"
+services:
+  dyndns-awscgw:
+    image: jamesfreeman959/dynip-aws-s2s-cgw-update:latest
+    environment:
+      - AWS_ACCESS_KEY_ID=
+      - AWS_SECRET_ACCESS_KEY=
+      - AWS_DEFAULT_REGION=
+      - CGW_NAME=

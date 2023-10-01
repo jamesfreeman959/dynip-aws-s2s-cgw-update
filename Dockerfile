@@ -1,11 +1,7 @@
 FROM python:3.11
-RUN apt-get update && apt-get -y install cron vim && apt-get clean
 WORKDIR /app
-RUN pip3 install boto3
-COPY crontab /etc/cron.d/crontab
+RUN pip3 install boto3 requests schedule
 COPY main.py /app/main.py
-RUN chmod 0644 /etc/cron.d/crontab
-RUN /usr/bin/crontab /etc/cron.d/crontab
+RUN chmod 0755 /app/main.py
 
-# run crond as main process of container
-CMD ["cron", "-f"]
+CMD ["/usr/local/bin/python3","-u","/app/main.py"]
