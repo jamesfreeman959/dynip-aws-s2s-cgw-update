@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  dynip-updater:
+    image: dynip-aws-s2s-cgw-update:latest
+
+    networks:
+      - default
+
+    environment:
+      # Customer Gateway name for tagging
+      CGW_NAME: ${CGW_NAME}
+
+      # IAM Roles Anywhere configuration
+      ROLESANYWHERE_CERTIFICATE_PATH: /certs/app-cert.pem
+      ROLESANYWHERE_PRIVATE_KEY_PATH: /certs/app-key.pem
+      ROLESANYWHERE_TRUST_ANCHOR_ARN: ${ROLESANYWHERE_TRUST_ANCHOR_ARN}
+      ROLESANYWHERE_PROFILE_ARN: ${ROLESANYWHERE_PROFILE_ARN}
+      ROLESANYWHERE_ROLE_ARN: ${ROLESANYWHERE_ROLE_ARN}
+
+      # AWS region
+      AWS_REGION: ${AWS_REGION}
+
+    # Swarm-specific configuration
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          # Optionally pin to a specific node
+          # - node.hostname == your-node-name
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+    # Secrets for certificates (more secure than volumes in Swarm)
+    secrets:
+      - source: app_cert
+        target: /certs/app-cert.pem
+        mode: 0444
+      - source: app_key
+        target: /certs/app-key.pem
+        mode: 0400
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    driver: overlay
+
+# Define secrets - these must be created before deploying the stack
+secrets:
+  app_cert:
+    external: true
+    name: dynip_app_cert
+  app_key:
+    external: true
+    name: dynip_app_key

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  dynip-updater:
+    build: .
+    image: dynip-aws-s2s-cgw-update:latest
+    container_name: dynip-cgw-updater
+    restart: unless-stopped
+
+    # Load environment variables from .env file
+    env_file:
+      - .env
+
+    volumes:
+      # Mount certificates as read-only
+      # Update the path on the left side to point to your certificate directory
+      - ./certs:/certs:ro
+
+    # Optional: Set logging limits to prevent disk space issues
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
